@@ -27,3 +27,42 @@ const url = require("url");
 //   });
 // });
 // console.log('Read this first');
+
+/////////////////////////////////
+// SERVER
+const data = fs.readFileSync(`${__dirname}/starter/dev-data/data.json`, 'utf8');
+// dataObj is an array with the 5 objects that came from data.json
+const dataObs = JSON.parse(data);
+
+const server = http.createServer((req, res) => {
+  const pathName = req.url;
+
+  // Overview Page
+  if (pathName === "/" || pathName === "/overview") {
+    res.end("This is the Overview Page!");
+
+  // Product Page
+  } else if (pathName === "/product") {
+    res.end("This is the Product Page.");
+
+  // API
+  } else if (pathName === "/api") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+    });
+    res.end(data);
+
+  // Not Found Page
+  } else {
+    res.writeHead(404, {
+      "Content-type": "text/html",
+      "my-own-header": "WellPasso",
+    });
+    res.end("<h1>Sorry, page not found!</h1>");
+  }
+});
+
+// Listening to income requests
+server.listen(8000, "127.0.0.1", () => {
+  console.log("Listening to requests on port 8000");
+});
