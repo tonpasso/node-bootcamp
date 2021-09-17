@@ -15,6 +15,18 @@ const checkId = (req, res, next, val) => {
   next();
 };
 
+const checkBody = (req, res, next) => {
+  const { name, price } = req.body;
+  console.log(name, price)
+  if (!name || !price) { 
+    return res.status(400).json({
+      status: "fails",
+      message: "name and price are required",
+    });
+  }
+  next();
+};
+
 const getAllTours = (req, res) => {
   res.status(200).json({
     status: "Success",
@@ -79,4 +91,5 @@ module.exports = {
   updateTour,
   excludeTour,
   checkId,
+  checkBody,
 };
