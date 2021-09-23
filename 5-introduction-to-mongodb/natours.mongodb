@@ -62,3 +62,35 @@ db.tours.find({
     { rating: { $gte: 4.9 } },    
   ],
 });
+
+use('natours-test');
+db.tours.updateOne(
+  { name: 'The Snow Adventurer' },
+  {
+    $set: {
+      price: 597
+    }
+  }
+);
+
+use('natours-test');
+db.tours.find({
+  $and: [
+    { price: { $gte: 500 }},
+    { rating: { $gte: 4.8 }}, 
+  ],
+});
+
+use('natours-test');
+db.tours.updateMany(
+  { 
+    price: { $gte: 500 },
+    rating: { $gte: 4.8 },
+  },  
+  { $set: { premium: true }}
+);
+
+use('natours-test');
+db.tours.deleteMany(
+  { rating: { $lt: 4.8 }}
+);
