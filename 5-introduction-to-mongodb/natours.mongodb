@@ -26,14 +26,39 @@ db.tours.insertMany([
 ]);
 
 use('natours-test');
-db.tours.updateOne({
+db.tours.updateOne(
   { price: 297 },
   {
     $set: {
       name: 'The Forest Hiker'
     }
   }
+);
+
+use('natours-test');
+db.tours.find(
+  { name: 'The Snow Adventurer'}
+);
+
+use('natours-test');
+db.tours.find(
+  { price: {
+    $lte: 800 
+  }}
+);
+
+use('natours-test');
+db.tours.find(
+  { 
+    price: { $lt: 800 },
+    rating: { $gte: 4.8 } 
+  }
+);
+
+use('natours-test');
+db.tours.find({
+  $or: [
+    { price: { $lt: 400 } },
+    { rating: { $gte: 4.9 } },    
+  ],
 });
-
-
-
