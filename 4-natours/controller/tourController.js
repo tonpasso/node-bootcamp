@@ -37,6 +37,21 @@ const getAllTours = async (req, res) => {
       query = query.select('-__v')
     }
 
+    // 4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page -1) * limit;
+
+    // page=2&limit=10 -> 1-10 is page 1, 11-20 is page 2, 21-30 is page 3...
+    // query = query.skip(10).limit(10) -> it will skip the first 10 results and show the page number 2
+    query = query.skip(skip).limit(limit);
+
+    // If the number of the page dos not exists
+    if (req.query.page) {
+      const numbersOfTours =  await Tour.countDocuments();
+      // console.log(numbersOfTours)
+      if (skip >= numbersOfTours) throw new Error('This page does not exist');
+    } 
 
     // Then we execute the query
     const tours = await query;
