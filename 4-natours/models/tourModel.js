@@ -55,13 +55,16 @@ const tourSchema = new mongoose.Schema({
     default: Date.now(),
     select: false
   },
-  startDates: [Date],
-  secretTour: {
-    type: Boolean,
-    default: false
-  },
-
+  startDates: [Date]
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true},
 });
+
+tourSchema.virtual('durationWeeks').get(function() {
+  return this.duration / 7
+});
+
 // we define the name of the model (in this case Tour), and then the schema witch will be used for
 const Tour = mongoose.model('Tour', tourSchema);
 
