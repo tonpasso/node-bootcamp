@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 // we use mongoose schema to specify a schema for our data and we can do some validations as well
 const tourSchema = new mongoose.Schema({
@@ -9,6 +10,7 @@ const tourSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  slug: String,
   duration: {
     type: Number,
     required: [true, 'A tour must have a duration']
@@ -64,6 +66,18 @@ const tourSchema = new mongoose.Schema({
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7
 });
+
+// DOCUMENT MIDDLEWARE: runs before .save() and .create()
+tourSchema.pre('save', function(next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// post middleware have access to the finished document
+// tourSchema.post('save', function(doc, next) {
+//   console.log(doc);
+//   next();
+// });
 
 // we define the name of the model (in this case Tour), and then the schema witch will be used for
 const Tour = mongoose.model('Tour', tourSchema);
