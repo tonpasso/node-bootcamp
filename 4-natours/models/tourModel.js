@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 // we use mongoose schema to specify a schema for our data and we can do some validations as well
 const tourSchema = new mongoose.Schema({
@@ -11,6 +12,7 @@ const tourSchema = new mongoose.Schema({
     trim: true,
     maxlength: [40, 'A tour name cannot be longer than 40 characters.'],
     minlength: [10, 'A tour name cannot be less than 10 characters.'],
+    // validate: [validator.isAlpha, 'A Tour name must only contains letters.']
   },
   slug: String,
   duration: {
@@ -44,7 +46,15 @@ const tourSchema = new mongoose.Schema({
     required: [true, 'A tour must have a price']
   },
   priceDiscount: {
-    type: Number
+    type: Number,
+    // we need to use regular function(), not arrow function, to have access to the "this" variable wich will point to the current document
+    validate: {
+      validator: function(value) {
+        // this only points to current doc on NEW document creation, therefore it not works on updates
+        return value < this.price;
+      },
+      message: 'Discount price ({VALUE}) must be less than price'
+    }
   },
   summary: {
     type: String,
