@@ -8,7 +8,9 @@ const tourSchema = new mongoose.Schema({
     // required: true -> we can just say that it is required and we also can define a error message if the fielld is not filled
     require: [true, 'A tour must have a name'],
     unique: true,
-    trim: true
+    trim: true,
+    maxlength: [40, 'A tour name cannot be longer than 40 characters.'],
+    minlength: [10, 'A tour name cannot be less than 10 characters.'],
   },
   slug: String,
   duration: {
@@ -21,11 +23,17 @@ const tourSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    required: [true, 'A tour must have a difficulty']
+    required: [true, 'A tour must have a difficulty'],
+    enum: {
+      values: ['easy', 'medium', 'difficult'],
+      message: 'Difficulty must be: easy, medium or difficult'
+    }
   },
   ratingsAverage: {
     type: Number,
-    default: 4.5
+    default: 4.5,
+    min: [1, 'Rating must be more or equal to 1.0'],
+    max: [5, 'Rating must be less or equal to 5.0'],
   },
   ratingsQuantity: {
     type: Number,
