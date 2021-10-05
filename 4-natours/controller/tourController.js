@@ -89,9 +89,13 @@ const getAllTours = async (req, res) => {
 const findTourById = async (req, res) => {
   try {
     const tourId = await Tour.findById(req.params.id);
+    // Behind the scenes it's using Tour.findOne({ _id: req.params.id})
+
     res.status(200).json({
       status: "success",
-      tourId,
+      data: {
+        tourId,
+      }
     });    
   } catch (error) {
     res.status(404).json({

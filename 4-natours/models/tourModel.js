@@ -57,7 +57,11 @@ const tourSchema = new mongoose.Schema({
     default: Date.now(),
     select: false
   },
-  startDates: [Date]
+  startDates: [Date],
+  secretTour: {
+    type: Boolean,
+    default: false
+  }
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true},
@@ -78,6 +82,21 @@ tourSchema.pre('save', function(next) {
 //   console.log(doc);
 //   next();
 // });
+
+//QUERY MIDDLEWARE
+tourSchema.pre(/^find/, function(next) {
+  // the regular expression will work with all the find methods, ex: findOne, findOneAndDelete...
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+// AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate', function(next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  console.log(this.pipeline());
+  next();
+})
+
 
 // we define the name of the model (in this case Tour), and then the schema witch will be used for
 const Tour = mongoose.model('Tour', tourSchema);
