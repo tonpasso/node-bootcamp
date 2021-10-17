@@ -5,6 +5,22 @@ const handleCastError = err => {
   return new AppError(message, 400);
 };
 
+const handleDuplicateFieldsDB = err => {  
+  // const value = err.keyValue[Object.keys(err.keyValue)[0]];
+  const value = err.keyValue.name;
+  console.log(value);
+
+  const message = `Duplicate field value: ${value}. Please use another value!`;
+  return new AppError(message, 400);
+};
+
+const handleValidationError = err => {
+  const resultErrors = Object.values(err.errors).map(info => info.message);
+
+  const message = `Invalid input data. ${resultErrors.join('. ')}`
+  return new AppError(message, 400);
+};
+
 const sendDevError = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -40,11 +56,18 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendDevError(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let errorObj = { ...err };
+    // let errorObj = { ...err };
+    // if (err.code === 11000) errorObj = handleDuplicateFieldsDB(errorObj);
 
-    if (err.name === 'CastError') errorObj = handleCastError(errorObj);
+    // Mongoose bad ObjectI
+    if (err.name === 'CastError') { err = handleCastError(err) };
 
-    sendProdError(errorObj, res);
-  }
-  
+    // Mongoose duplicate key/fields
+    if (err.code === 11000) { err = handleDuplicateFieldsDB(err) };
+
+    // Mongoose validationError
+    if (err.name === 'ValidationError') { err = handleValidationError(err) };
+
+    sendProdError(err, res);
+  }  
 };
