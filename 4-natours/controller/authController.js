@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
@@ -11,9 +12,9 @@ const signToken = id => {
 }
 
 const signup = catchAsync(async (req, res, next) => {
-  const { name, email, password, passwordConfirm } = req.body;  
+  const { name, email, password, passwordConfirm, passwordChangedAt } = req.body;  
 
-  const newUser = await User.create({ name, email, password, passwordConfirm });
+  const newUser = await User.create({ name, email, password, passwordConfirm, passwordChangedAt });
   const token = signToken(newUser._id);
   res.status(201).json({
     status: 'success',
@@ -45,8 +46,51 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
+const protect = catchAsync(async (req, res, next) => {
+  // 1) Getting token and checking if it's there
+  let token
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(new AppError('You are not logged in! Please log in to get access.', 401));
+  }
+  
+  // 2) Verify token
+  const decoded = await promisify(jwt.verify)(token, jwtSecret);
+    
+  // const decoded = await promisify(jwt.verify)(token, jwtSecret);
+  // console.log('console 1', decoded);
+  // const idDecoded = decoded.id;
+  // console.log('console 2', idDecoded);
+
+  // const user = await User.findOne({ _id: idDecoded });
+  // console.log('console 3', user);
+  // console.log('console 4', user._id);
+
+  // if (idDecoded === user.id) {
+  //   return next(console.log('token igual'))    
+  // }
+
+
+  // 3) Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(new AppError('This user no longer exists', 401))
+  } 
+
+  // 4) Check if user changed password after the token was issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(new AppError('User has changed the password, please log in again', 401));
+  }
+
+  req.user = currentUser;
+  next();
+});
+
 module.exports = {
   signup,
   login,
+  protect
 }
-
