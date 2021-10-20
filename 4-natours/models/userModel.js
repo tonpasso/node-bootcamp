@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: [true, 'Please enter a password!'],
     minlength: 8,
+    // when use Get methods the password wont be displayed
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -49,7 +51,11 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
+// this function returns true or false if they are equal or not. the function is available on all the user documents
+userSchema.methods.correctPassword = async function (enteredPassword, userPassword) {
+  return await bcrypt.compare(enteredPassword, userPassword);
+}
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
-
