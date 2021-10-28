@@ -98,14 +98,27 @@ const restrictTo = (...roles) => {
     if(!roles.includes(req.user.role)) {
       return next(new AppError('Permission denied!', 403));
     }
-    
+
     next();
   }
 };
+
+const forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('User not found.', 404))
+  }
+
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save();
+});
 
 module.exports = {
   signup,
   login,
   protect,
-  restrictTo
+  restrictTo,
+  forgotPassword
 }
