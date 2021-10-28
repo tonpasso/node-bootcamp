@@ -12,9 +12,9 @@ const signToken = id => {
 }
 
 const signup = catchAsync(async (req, res, next) => {
-  const { name, email, password, passwordConfirm, passwordChangedAt } = req.body;  
+  const { name, email, password, passwordConfirm, passwordChangedAt, role } = req.body;  
 
-  const newUser = await User.create({ name, email, password, passwordConfirm, passwordChangedAt });
+  const newUser = await User.create({ name, email, password, passwordConfirm, passwordChangedAt, role });
   const token = signToken(newUser._id);
   res.status(201).json({
     status: 'success',
@@ -87,11 +87,25 @@ const protect = catchAsync(async (req, res, next) => {
 
   // Grant access to protected route
   req.user = currentUser;
+  // console.log(req.user);
   next();
 });
+
+// (...roles) comes from the roles defined at authController.restrictTo('admin', 'lead-guide')
+const restrictTo = (...roles) => {
+  return (req, res, next) => {    
+    // roles ['admin', 'lead-guide'] role=user
+    if(!roles.includes(req.user.role)) {
+      return next(new AppError('Permission denied!', 403));
+    }
+    
+    next();
+  }
+};
 
 module.exports = {
   signup,
   login,
-  protect
+  protect,
+  restrictTo
 }
